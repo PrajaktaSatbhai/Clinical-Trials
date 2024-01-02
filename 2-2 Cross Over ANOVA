@@ -1,0 +1,42 @@
+Y11=c(12.35,14.25,13.65,12,12.36,15.25)
+Y21=c(15.23,14.02,13.23,15.02,19.02,12.05)
+Y12=c(12.8,12.89,13.25,14.07,16.04,15.26)
+Y22=c(16.04,16,14.17,15.01,15.08,16.04)
+
+U1=Y11+Y21;       U2=Y12+Y22;
+D1=(Y21-Y11)/2 ;  D2=(Y22-Y12)/2;
+O1=D1;            O2=-D2;
+n1=length(Y11);   n2=length(Y22);
+alpha=0.05;
+
+s2u=((n1-1)*var(U1)+(n2-1)*var(U2))/(n1+n2-2)
+s2d=((n1-1)*var(D1)+(n2-1)*var(D2))/(n1+n2-2)
+
+df=data.frame("Effect"=c("Carry","Drug","Period"),
+              "MVUE"=c(mean(U2)-mean(U1),mean(D1)-mean(D2),mean(O1)-mean(O2)),
+              "sig2"=c(s2u,s2d,s2d))
+df$tcal=df$MVUE/sqrt(df$sig2*(1/n1+1/n2))
+df$lower=df$MVUE-qt(1-alpha/2,n1+n2-2)*sqrt(df$sig2*(1/n1+1/n2))
+df$upper=df$MVUE+qt(1-alpha/2,n1+n2-2)*sqrt(df$sig2*(1/n1+1/n2))
+df$pval=2*(1-pt(abs(df$tcal),n1+n2-2,lower.tail=T))
+df
+
+SSTotal=var(c(Y11,Y12,Y21,Y22))*(2*(n1+n2)-1)
+SSCarry=2*n1*n2/(n1+n2)*(df$MVUE[1])^2/4
+SSDrug=2*n1*n2/(n1+n2)*(df$MVUE[2])^2
+SSPeriod=2*n1*n2/(n1+n2)*(df$MVUE[3])^2
+SSInter=(sum(U1^2)+sum(U2^2))/2-(sum(U1))^2/(2*n1)-(sum(U2))^2/(2*n2)
+SSIntra=SSTotal-SSCarry-SSDrug-SSPeriod-SSInter
+df_aov=data.frame("SV"=c("Carry","InterResi","DirectDrug","Period","IntrsResi","Total"),
+                  "DF"=c(1,n1+n2-2,1,1,n1+n2-2,2*(n1+n2)-1),
+                  "SS"=c(SSCarry,SSInter,SSDrug,SSPeriod,SSIntra,SSTotal))
+df_aov$MS=df_aov$SS/df_aov$DF
+df_aov$F=df_aov$MS/df_aov$MS[5]
+df_aov$F[1]=df_aov$MS[1]/df_aov$MS[2]
+df_aov$Pval=1-pf(df_aov$F,1,n1+n2-2)
+df_aov$Pval[2]=1-pf(df_aov$F[2],n1+n2-2,n1+n2-2)
+df_aov[,3:5]=zapsmall(df_aov[,3:5])
+df_aov[,6]=zapsmall(df_aov[,6],5)
+df_aov$Pval[5:6]="-"
+df_aov$F[5:6]="-"
+df_aov
