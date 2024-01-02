@@ -1,0 +1,22 @@
+Y11=c(12.35,14.25,13.65,12,12.36,15.25)
+Y21=c(15.23,14.02,13.23,15.02,19.02,12.05)
+Y12=c(12.8,12.89,13.25,14.07,16.04,15.26)
+Y22=c(16.04,16,14.17,15.01,15.08,16.04)
+
+U1=Y11+Y21;       U2=Y12+Y22;
+D1=(Y21-Y11)/2 ;  D2=(Y22-Y12)/2;
+O1=D1;            O2=-D2;
+n1=length(Y11);   n2=length(Y22);
+
+sigma2u=((n1-1)*var(U1)+(n2-1)*var(U2))/(n1+n2-2)
+sigma2d=((n1-1)*var(D1)+(n2-1)*var(D2))/(n1+n2-2)
+
+df=data.frame("Effect"=c("Carryover","DirectDrug","Period"),
+              "MVUE"=c(mean(U2)-mean(U1),mean(D1)-mean(D2),mean(O1)-mean(O2)),
+              "sigma2"=c(sigma2u,sigma2d,sigma2d))
+df$t=df$MVUE/sqrt(df$sigma2*(1/n1+1/n2))
+alpha=0.05
+df$lower=df$MVUE-qt(1-alpha/2,n1+n2-2)*sqrt(df$sigma2*(1/n1+1/n2))
+df$upper=df$MVUE+qt(1-alpha/2,n1+n2-2)*sqrt(df$sigma2*(1/n1+1/n2))
+df$pval=2*(1-pt(abs(df$t),n1+n2-2,lower.tail=T))
+df
