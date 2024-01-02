@@ -1,0 +1,12 @@
+rm(list=ls())
+ti=c(0,.5,1,1.5,2,3,5,10,15,20,25,30)
+ci=c(0,.54,.97,1.1,1.35,2.69,3.85,2.78,2.7,2.11,1.52,1.27)
+last=length(ti)
+Cmax=max(ci)
+Tmax=ti[ci==Cmax]
+AUCt=sum((ci[2:last]+ci[1:(last-1)])*(ti[2:last]-ti[1:(last-1)]))/2
+Ke=-2.303*coef(lm(log10(ci[ti>Tmax])~ti[ti>Tmax]))[[2]]
+AUCinf=AUCt+ci[last]/Ke
+THalf=0.693/Ke
+pk=data.frame(Cmax,Tmax,Ke,THalf,AUCt,AUCinf)
+pk
