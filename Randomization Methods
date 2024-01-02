@@ -1,0 +1,45 @@
+# Complete Randomization :-
+Patients1=1:30
+Drug1=c("Active","Palcebo")
+df1=data.frame("Patients"=Patients1,"Drug"=sample(Drug1,30,replace=T))
+print(table(df1$Drug))
+sprintf("Sample Fraction: %1.3f",min(table(df1$Drug))/30)
+
+
+# Permuted Block Randomization :-
+N2=30;nblock2=3;n2=N2/nblock2;
+Patients2=1:N2
+Drug2=c("Active","Placebo")
+D1=sample(rep(Drug2,n2/2),n2,replace = F)
+D2=sample(rep(Drug2,n2/2),n2,replace = F)
+D3=sample(rep(Drug2,n2/2),n2,replace = F)
+df2=data.frame("Patients"=Patients2,"Drug"=c(D1,D2,D3))
+print(table(df2$Drug))
+sprintf("Sample Fraction: %1.3f",min(table(df2$Drug))/N2)
+
+
+# Treatment Adaptive Randomization :-
+Patients2=1:30
+Drug21=c("Active","Placebo")
+D11=sample(rep(Drug21,c(7,8)),15,replace = F)
+D21=sample(rep(Drug21,c(8,7)),15,replace = F)
+df21=data.frame("Patients"=Patients2,"Drug"=c(D11,D21))
+print(table(df21$Drug))
+sprintf("Sample Fraction: %1.3f",min(table(df21$Drug))/30)
+
+
+# Response Adaptive Randomization :-
+N3=100;Patients3=1:N3;p3=0.5;
+Drugs=c("Active","Placebo")
+Drug3=rep(0,N3)
+Prob3=rep(0,N3)
+Drug3[1]=sample(Drugs,1,prob = c(p3,1-p3))
+Prob3[1]=p3
+for(i in 2:N3){
+  p3=p3+ifelse(Drug3[i-1]=='Active',-0.02,0.02)
+  Drug3[i]=sample(Drugs,1,prob=c(p3,1-p3))
+  Prob3[i]=p3
+}
+df3=data.frame("Patients"=Patients3,"Drug"=Drug3,"ProbActiveDrug"=Prob3)
+print(table(df3$Drug))
+sprintf("Sample Fraction: %1.3f",min(table(df3$Drug))/N3)
